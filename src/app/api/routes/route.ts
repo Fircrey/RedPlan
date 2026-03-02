@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import type { Pole } from '@/types'
+import type { Pole, RouteSegment } from '@/types'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
     totalDistanceMeters,
     totalPoles,
     poles,
+    segments,
   } = body
 
   if (!projectId || !name) {
@@ -72,6 +73,25 @@ export async function POST(request: NextRequest) {
       // Cleanup: delete the route if poles failed
       await supabase.from('routes').delete().eq('id', route.id)
       return NextResponse.json({ error: polesError.message }, { status: 500 })
+    }
+  }
+
+  // Insert segments
+  if (segments && Array.isArray(segments) && segments.length > 0) {
+    const segmentRows = segments.map((seg: RouteSegment) => ({
+      route_id: route.id,
+      from_pole: seg.fromPole,
+      to_pole: seg.toPole,
+      symbology: seg.symbology,
+    }))
+
+    const { error: segmentsError } = await supabase
+      .from('route_segments')
+      .insert(segmentRows)
+
+    if (segmentsError) {
+      await supabase.from('routes').delete().eq('id', route.id)
+      return NextResponse.json({ error: segmentsError.message }, { status: 500 })
     }
   }
 

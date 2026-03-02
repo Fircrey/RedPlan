@@ -13,7 +13,7 @@ export function exportPolesToCSV(
     )
     const symbology = seg ? LINE_SYMBOLOGY_CONFIG[seg.symbology].label : ''
     const statusLabel = POLE_STATUS_LABELS[p.status] || p.status
-    return `${p.sequenceNumber};${p.lat};${p.lng};${p.type};${statusLabel};${symbology}`
+    return `${p.sequenceNumber};${p.lat.toFixed(6)};${p.lng.toFixed(6)};${p.type};${statusLabel};${symbology}`
   })
   const csv = [header, ...rows].join('\n')
 

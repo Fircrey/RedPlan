@@ -23,17 +23,31 @@ export async function GET(
     return NextResponse.json({ error: 'Route not found' }, { status: 404 })
   }
 
-  const { data: poles, error: polesError } = await supabase
-    .from('poles')
-    .select('*')
-    .eq('route_id', id)
-    .order('sequence_number', { ascending: true })
+  const [polesResult, segmentsResult] = await Promise.all([
+    supabase
+      .from('poles')
+      .select('*')
+      .eq('route_id', id)
+      .order('sequence_number', { ascending: true }),
+    supabase
+      .from('route_segments')
+      .select('*')
+      .eq('route_id', id),
+  ])
 
-  if (polesError) {
-    return NextResponse.json({ error: polesError.message }, { status: 500 })
+  if (polesResult.error) {
+    return NextResponse.json({ error: polesResult.error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ ...route, poles })
+  if (segmentsResult.error) {
+    return NextResponse.json({ error: segmentsResult.error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({
+    ...route,
+    poles: polesResult.data,
+    segments: segmentsResult.data,
+  })
 }
 
 export async function DELETE(

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-export async function GET() {
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -10,9 +14,10 @@ export async function GET() {
   }
 
   const { data, error } = await supabase
-    .from('projects')
+    .from('budget_items')
     .select('*')
-    .order('updated_at', { ascending: false })
+    .eq('project_id', id)
+    .order('created_at')
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -21,7 +26,11 @@ export async function GET() {
   return NextResponse.json(data)
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -30,20 +39,20 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { name, description, zone_id } = body
+  const { description, quantity, unit, unit_cost } = body
 
-  if (!name || typeof name !== 'string') {
-    return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+  if (!description || !quantity || !unit || unit_cost === undefined) {
+    return NextResponse.json({ error: 'All fields are required' }, { status: 400 })
   }
 
   const { data, error } = await supabase
-    .from('projects')
+    .from('budget_items')
     .insert({
-      user_id: user.id,
-      name,
-      description: description || null,
-      zone_id: zone_id || null,
-      status: 'borrador',
+      project_id: id,
+      description,
+      quantity,
+      unit,
+      unit_cost,
     })
     .select()
     .single()
@@ -51,6 +60,14 @@ export async function POST(request: NextRequest) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
+
+  // Audit log
+  await supabase.from('audit_log').insert({
+    project_id: id,
+    user_id: user.id,
+    action: 'budget_item_added',
+    details: { description, quantity, unit, unit_cost },
+  })
 
   return NextResponse.json(data, { status: 201 })
 }

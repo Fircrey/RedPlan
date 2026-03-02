@@ -27,6 +27,9 @@ export function SegmentSelector({
   function handleApply() {
     if (fromPole >= toPole || fromPole < 1 || toPole > totalPoles) return
     onAddSegment({ fromPole, toPole, symbology })
+    // Reset form for next segment — advance fromPole to where this one ended
+    setFromPole(toPole)
+    setToPole(totalPoles)
   }
 
   return (
@@ -81,7 +84,7 @@ export function SegmentSelector({
           <p className="text-xs text-gray-500 font-medium">Tramos asignados:</p>
           {segments.map((seg, i) => (
             <div
-              key={i}
+              key={`${seg.fromPole}-${seg.toPole}-${seg.symbology}`}
               className="flex items-center justify-between bg-gray-50 rounded px-2 py-1.5 text-xs"
             >
               <span className="text-gray-700">

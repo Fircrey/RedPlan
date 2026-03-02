@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { LogoutButton } from '@/components/auth/logout-button'
+import { NavRole } from '@/components/nav-role'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,6 +11,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             PlanosElectricos
           </Link>
           <div className="flex items-center gap-4">
+            <NavRole />
             <Link
               href="/dashboard"
               className="text-sm text-gray-600 hover:text-gray-900 transition-colors"

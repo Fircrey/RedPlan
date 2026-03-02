@@ -7,10 +7,13 @@ interface UseCalculateRouteReturn {
   poles: Pole[]
   setPoles: Dispatch<SetStateAction<Pole[]>>
   polylinePoints: LatLng[]
+  setPolylinePoints: Dispatch<SetStateAction<LatLng[]>>
   totalDistanceMeters: number
+  setTotalDistanceMeters: Dispatch<SetStateAction<number>>
   isCalculating: boolean
   error: string | null
   lastRequest: CalculateRequest | null
+  setLastRequest: Dispatch<SetStateAction<CalculateRequest | null>>
   calculate: (data: CalculateRequest) => Promise<void>
   reset: () => void
 }
@@ -64,10 +67,13 @@ export function useCalculateRoute(): UseCalculateRouteReturn {
     poles,
     setPoles,
     polylinePoints,
+    setPolylinePoints,
     totalDistanceMeters,
+    setTotalDistanceMeters,
     isCalculating,
     error,
     lastRequest,
+    setLastRequest,
     calculate,
     reset,
   }

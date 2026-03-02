@@ -20,6 +20,8 @@ export function useProjects() {
           userId: p.user_id,
           name: p.name,
           description: p.description,
+          status: p.status ?? 'borrador',
+          zoneId: p.zone_id ?? null,
           createdAt: p.created_at,
           updatedAt: p.updated_at,
         })),
@@ -35,12 +37,12 @@ export function useProjects() {
     fetchProjects()
   }, [fetchProjects])
 
-  async function createProject(name: string, description?: string): Promise<Project | null> {
+  async function createProject(name: string, description?: string, zoneId?: string): Promise<Project | null> {
     try {
       const res = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description }),
+        body: JSON.stringify({ name, description, zone_id: zoneId }),
       })
       if (!res.ok) throw new Error('Error al crear proyecto')
       const p = await res.json()
@@ -49,6 +51,8 @@ export function useProjects() {
         userId: p.user_id,
         name: p.name,
         description: p.description,
+        status: p.status ?? 'borrador',
+        zoneId: p.zone_id ?? null,
         createdAt: p.created_at,
         updatedAt: p.updated_at,
       }
