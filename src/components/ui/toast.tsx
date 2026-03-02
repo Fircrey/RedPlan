@@ -42,7 +42,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               {
                 'bg-green-600': t.type === 'success',
                 'bg-red-600': t.type === 'error',
-                'bg-blue-600': t.type === 'info',
+                'bg-[var(--color-primary)]': t.type === 'info',
               },
             )}
             onClick={() => removeToast(t.id)}

@@ -10,8 +10,8 @@ const geist = Geist({
 })
 
 export const metadata: Metadata = {
-  title: 'PlanosElectricos - Planificacion de postes electricos',
-  description: 'Herramienta de planificacion geoespacial para distribucion de postes electricos',
+  title: 'RedPlan - Planificacion de redes electricas',
+  description: 'Herramienta de planificacion geoespacial para redes de distribucion electrica',
 }
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body className={`${geist.variable} font-sans antialiased`}>
         <SupabaseProvider>
           <ToastProvider>

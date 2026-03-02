@@ -27,7 +27,7 @@ export function RejectDialog({ open, onClose, onConfirm, loading }: RejectDialog
       <h2 className="text-lg font-semibold mb-4">Rechazar proyecto</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
             Motivo del rechazo
           </label>
           <textarea
@@ -36,7 +36,7 @@ export function RejectDialog({ open, onClose, onConfirm, loading }: RejectDialog
             placeholder="Describe el motivo del rechazo..."
             required
             rows={3}
-            className="flex w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:border-transparent"
           />
         </div>
         <div className="flex gap-2">

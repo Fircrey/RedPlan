@@ -28,33 +28,33 @@ export function AuditPanel({ entries, loading }: AuditPanelProps) {
 
   return (
     <div className="space-y-3">
-      <h3 className="font-semibold text-sm text-gray-900">Historial de auditoria</h3>
+      <h3 className="font-semibold text-sm text-[var(--color-text)]">Historial de auditoria</h3>
 
       {entries.length === 0 ? (
-        <p className="text-sm text-gray-400">Sin registros</p>
+        <p className="text-sm text-[var(--color-text-muted)]">Sin registros</p>
       ) : (
         <div className="space-y-2 max-h-60 overflow-y-auto">
           {entries.map((entry) => {
             const details = entry.details as Record<string, unknown>
             return (
-              <div key={entry.id} className="border-l-2 border-gray-200 pl-3 py-1 text-sm">
+              <div key={entry.id} className="border-l-2 border-[var(--color-border)] pl-3 py-1 text-sm">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-700">
+                  <span className="font-medium text-[var(--color-text-secondary)]">
                     {ACTION_LABELS[entry.action] ?? entry.action}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-[var(--color-text-muted)]">
                   {entry.userEmail ?? 'Usuario'} — {new Date(entry.createdAt).toLocaleString('es-CO')}
                 </p>
                 {entry.action === 'status_change' && typeof details.from === 'string' && typeof details.to === 'string' && (
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
                     {PROJECT_STATUS_CONFIG[details.from as ProjectStatus]?.label ?? details.from}
                     {' → '}
                     {PROJECT_STATUS_CONFIG[details.to as ProjectStatus]?.label ?? details.to}
                   </p>
                 )}
                 {typeof details.comment === 'string' && (
-                  <p className="text-xs text-gray-600 mt-0.5 italic">
+                  <p className="text-xs text-[var(--color-text-secondary)] mt-0.5 italic">
                     &quot;{details.comment}&quot;
                   </p>
                 )}

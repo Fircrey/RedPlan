@@ -39,7 +39,7 @@ export function MapView({
       <Map
         defaultCenter={DEFAULT_MAP_CENTER}
         defaultZoom={DEFAULT_MAP_ZOOM}
-        mapId="planos-electricos-map"
+        mapId="redplan-map"
         gestureHandling="greedy"
         disableDefaultUI={false}
         className="w-full h-full"

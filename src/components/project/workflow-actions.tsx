@@ -51,9 +51,9 @@ export function WorkflowActions({
 
   if (userRole === 'administrador' || availableTransitions.length === 0) {
     return (
-      <div className="p-4 border-t border-gray-100">
+      <div className="p-4 border-t border-[var(--color-border-light)]">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">Estado:</span>
+          <span className="text-sm text-[var(--color-text-muted)]">Estado:</span>
           <StatusBadge status={projectStatus} />
         </div>
       </div>
@@ -89,9 +89,9 @@ export function WorkflowActions({
   const showRejectButton = availableTransitions.includes('rechazado')
 
   return (
-    <div className="p-4 border-t border-gray-100 space-y-3">
+    <div className="p-4 border-t border-[var(--color-border-light)] space-y-3">
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500">Estado:</span>
+        <span className="text-sm text-[var(--color-text-muted)]">Estado:</span>
         <StatusBadge status={projectStatus} />
       </div>
 

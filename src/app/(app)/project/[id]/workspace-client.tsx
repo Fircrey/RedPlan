@@ -14,6 +14,7 @@ import { useProjectRoute } from '@/hooks/use-project-route'
 import { useAutoSaveRoute } from '@/hooks/use-auto-save-route'
 import { useToast } from '@/components/ui/toast'
 import { Spinner } from '@/components/ui/spinner'
+import { MobileDrawer } from '@/components/mobile-drawer'
 import type { CalculateRequest, PoleStatus, RouteSegment, ProjectStatus, Project } from '@/types'
 
 interface WorkspaceClientProps {
@@ -59,7 +60,7 @@ export function WorkspaceClient({ project }: WorkspaceClientProps) {
     setSegments(savedRoute.segments)
   }, [savedRoute, poles.length, setPoles, setPolylinePoints, setTotalDistanceMeters, setLastRequest])
 
-  const { saving } = useAutoSaveRoute({
+  const { saving, saved } = useAutoSaveRoute({
     projectId: project.id,
     poles,
     polylinePoints,
@@ -129,50 +130,58 @@ export function WorkspaceClient({ project }: WorkspaceClientProps) {
   const canComment = role !== 'administrador'
   const showAudit = role === 'gestor' || role === 'administrador'
 
+  const sidebarContent = (
+    <Sidebar
+      poles={poles}
+      totalDistanceMeters={totalDistanceMeters}
+      selectedPoleIndex={selectedPoleIndex}
+      onSelectPole={setSelectedPoleIndex}
+      onCalculate={handleCalculate}
+      isCalculating={isCalculating}
+      segments={segments}
+      onAddSegment={handleAddSegment}
+      onRemoveSegment={handleRemoveSegment}
+      projectStatus={currentStatus}
+      userRole={role}
+      availableTransitions={availableTransitions}
+      onTransition={handleTransition}
+      transitioning={transitioning}
+      budgetItems={budget.items}
+      budgetLoading={budget.loading}
+      budgetGrandTotal={budget.grandTotal}
+      onAddBudgetItem={budget.addItem}
+      onDeleteBudgetItem={budget.deleteItem}
+      budgetEditable={budgetEditable}
+      comments={commentsHook.comments}
+      commentsLoading={commentsHook.loading}
+      onAddComment={commentsHook.addComment}
+      canComment={canComment}
+      auditEntries={audit.entries}
+      auditLoading={audit.loading}
+      showAudit={showAudit}
+    />
+  )
+
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100vh-64px)] relative">
+    <div className="flex h-[calc(100vh-64px)] relative">
       {/* Auto-save indicator */}
-      {saving && (
-        <div className="absolute top-2 right-2 z-50 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow">
-          Guardando...
+      {(saving || saved) && (
+        <div className={`absolute top-2 right-2 z-50 text-xs px-2 py-1 rounded shadow border ${
+          saved
+            ? 'bg-green-50 text-green-700 border-green-200'
+            : 'bg-[var(--color-surface-secondary)] text-[var(--color-text)] border-[var(--color-border)]'
+        }`}>
+          {saving ? 'Guardando...' : 'Guardado \u2713'}
         </div>
       )}
 
-      {/* Sidebar */}
-      <div className="w-full md:w-96 md:flex-shrink-0 md:border-r border-gray-200 overflow-hidden order-2 md:order-1 max-h-[50vh] md:max-h-none">
-        <Sidebar
-          poles={poles}
-          totalDistanceMeters={totalDistanceMeters}
-          selectedPoleIndex={selectedPoleIndex}
-          onSelectPole={setSelectedPoleIndex}
-          onCalculate={handleCalculate}
-          isCalculating={isCalculating}
-          segments={segments}
-          onAddSegment={handleAddSegment}
-          onRemoveSegment={handleRemoveSegment}
-          projectStatus={currentStatus}
-          userRole={role}
-          availableTransitions={availableTransitions}
-          onTransition={handleTransition}
-          transitioning={transitioning}
-          budgetItems={budget.items}
-          budgetLoading={budget.loading}
-          budgetGrandTotal={budget.grandTotal}
-          onAddBudgetItem={budget.addItem}
-          onDeleteBudgetItem={budget.deleteItem}
-          budgetEditable={budgetEditable}
-          comments={commentsHook.comments}
-          commentsLoading={commentsHook.loading}
-          onAddComment={commentsHook.addComment}
-          canComment={canComment}
-          auditEntries={audit.entries}
-          auditLoading={audit.loading}
-          showAudit={showAudit}
-        />
-      </div>
+      {/* Sidebar — desktop as panel, mobile as bottom sheet */}
+      <MobileDrawer title="Calcular postes">
+        {sidebarContent}
+      </MobileDrawer>
 
-      {/* Map */}
-      <div className="flex-1 order-1 md:order-2 min-h-[50vh] md:min-h-0">
+      {/* Map — full height always */}
+      <div className="flex-1 h-full">
         <MapProvider>
           <MapView
             poles={poles}

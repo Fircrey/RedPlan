@@ -41,7 +41,7 @@ export function Dialog({ open, onClose, children, className }: DialogProps) {
     >
       <div
         className={cn(
-          'w-full max-w-md rounded-xl bg-white p-6 shadow-xl',
+          'w-full max-w-md rounded-xl bg-[var(--color-surface)] p-6 shadow-xl',
           className,
         )}
       >

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Dialog } from '@/components/ui/dialog'
 import { Spinner } from '@/components/ui/spinner'
 import { BUDGET_UNITS } from '@/lib/constants'
 import type { BudgetItem } from '@/types'
@@ -23,6 +24,7 @@ export function BudgetPanel({ items, loading, grandTotal, onAdd, onDelete, edita
   const [unit, setUnit] = useState('und')
   const [unitCost, setUnitCost] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -55,10 +57,12 @@ export function BudgetPanel({ items, loading, grandTotal, onAdd, onDelete, edita
     )
   }
 
+  const deleteItem = items.find((i) => i.id === deleteId)
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-sm text-gray-900">Presupuesto</h3>
+        <h3 className="font-semibold text-sm text-[var(--color-text)]">Presupuesto</h3>
         {editable && (
           <Button size="sm" variant="ghost" onClick={() => setShowForm(!showForm)}>
             {showForm ? 'Cancelar' : '+ Item'}
@@ -67,7 +71,7 @@ export function BudgetPanel({ items, loading, grandTotal, onAdd, onDelete, edita
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="space-y-2 bg-gray-50 rounded-lg p-3">
+        <form onSubmit={handleSubmit} className="space-y-2 bg-[var(--color-surface-secondary)] rounded-lg p-3">
           <Input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -88,7 +92,7 @@ export function BudgetPanel({ items, loading, grandTotal, onAdd, onDelete, edita
             <select
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
-              className="h-10 rounded-lg border border-gray-300 bg-white px-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="h-10 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]"
             >
               {BUDGET_UNITS.map((u) => (
                 <option key={u} value={u}>{u}</option>
@@ -112,26 +116,26 @@ export function BudgetPanel({ items, loading, grandTotal, onAdd, onDelete, edita
       )}
 
       {items.length === 0 ? (
-        <p className="text-sm text-gray-400">Sin items de presupuesto</p>
+        <p className="text-sm text-[var(--color-text-muted)]">Sin items de presupuesto</p>
       ) : (
         <>
           <div className="space-y-1 max-h-48 overflow-y-auto">
             {items.map((item) => (
-              <div key={item.id} className="flex items-center justify-between text-sm bg-gray-50 rounded px-3 py-2">
+              <div key={item.id} className="flex items-center justify-between text-sm bg-[var(--color-surface-secondary)] rounded px-3 py-2">
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-700 truncate">{item.description}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="font-medium text-[var(--color-text-secondary)] truncate">{item.description}</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">
                     {item.quantity} {item.unit} x {formatCurrency(item.unitCost)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 ml-2">
-                  <span className="text-sm font-medium text-gray-900 whitespace-nowrap">
+                  <span className="text-sm font-medium text-[var(--color-text)] whitespace-nowrap">
                     {formatCurrency(item.total)}
                   </span>
                   {editable && (
                     <button
-                      onClick={() => onDelete(item.id)}
-                      className="text-gray-400 hover:text-red-600 text-xs"
+                      onClick={() => setDeleteId(item.id)}
+                      className="text-[var(--color-text-muted)] hover:text-red-600 text-xs"
                     >
                       x
                     </button>
@@ -140,12 +144,31 @@ export function BudgetPanel({ items, loading, grandTotal, onAdd, onDelete, edita
               </div>
             ))}
           </div>
-          <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-            <span className="text-sm font-semibold text-gray-700">Total</span>
-            <span className="text-base font-bold text-gray-900">{formatCurrency(grandTotal)}</span>
+          <div className="flex justify-between items-center pt-2 border-t border-[var(--color-border)]">
+            <span className="text-sm font-semibold text-[var(--color-text-secondary)]">Total</span>
+            <span className="text-base font-bold text-[var(--color-text)]">{formatCurrency(grandTotal)}</span>
           </div>
         </>
       )}
+
+      <Dialog open={deleteId !== null} onClose={() => setDeleteId(null)}>
+        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-2">Eliminar item</h2>
+        <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+          Eliminar &quot;{deleteItem?.description}&quot;?
+        </p>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => setDeleteId(null)} className="flex-1">
+            Cancelar
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => { if (deleteId) { onDelete(deleteId); setDeleteId(null) } }}
+            className="flex-1"
+          >
+            Eliminar
+          </Button>
+        </div>
+      </Dialog>
     </div>
   )
 }

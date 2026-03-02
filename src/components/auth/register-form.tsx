@@ -46,7 +46,7 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="email" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
           Correo electronico
         </label>
         <Input
@@ -59,7 +59,7 @@ export function RegisterForm() {
         />
       </div>
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="password" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
           Contrasena
         </label>
         <Input
@@ -72,7 +72,7 @@ export function RegisterForm() {
         />
       </div>
       <div>
-        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="confirmPassword" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
           Confirmar contrasena
         </label>
         <Input

@@ -42,7 +42,7 @@ export function RouteInputForm({ onCalculate, isCalculating }: RouteInputFormPro
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">Origen</label>
+        <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1 uppercase tracking-wide">Origen</label>
         <div className="grid grid-cols-2 gap-2">
           <Input
             type="number"
@@ -64,7 +64,7 @@ export function RouteInputForm({ onCalculate, isCalculating }: RouteInputFormPro
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">Destino</label>
+        <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1 uppercase tracking-wide">Destino</label>
         <div className="grid grid-cols-2 gap-2">
           <Input
             type="number"
@@ -86,8 +86,8 @@ export function RouteInputForm({ onCalculate, isCalculating }: RouteInputFormPro
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">
-          Separacion (metros)
+        <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1 uppercase tracking-wide">
+          Distancia entre postes (m)
         </label>
         <Input
           type="number"
@@ -100,13 +100,13 @@ export function RouteInputForm({ onCalculate, isCalculating }: RouteInputFormPro
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">
-          Modo de calculo
+        <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1 uppercase tracking-wide">
+          Modo de ruta
         </label>
         <select
           value={mode}
           onChange={(e) => setMode(e.target.value as RouteMode)}
-          className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex h-10 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]"
         >
           <option value="road_osrm">Carretera (OSRM)</option>
           <option value="road_google">Carretera (Google)</option>

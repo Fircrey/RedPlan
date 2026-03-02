@@ -29,7 +29,7 @@ export function ConciliationDialog({ open, onClose, onConfirm, loading }: Concil
       <h2 className="text-lg font-semibold mb-4">Registrar conciliacion</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Resultado</label>
+          <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">Resultado</label>
           <div className="flex gap-3">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -37,9 +37,9 @@ export function ConciliationDialog({ open, onClose, onConfirm, loading }: Concil
                 name="conciliation"
                 checked={approved}
                 onChange={() => setApproved(true)}
-                className="text-blue-600"
+                className="accent-[var(--color-primary)]"
               />
-              <span className="text-sm text-gray-700">Aprobada</span>
+              <span className="text-sm text-[var(--color-text-secondary)]">Aprobada</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -47,14 +47,14 @@ export function ConciliationDialog({ open, onClose, onConfirm, loading }: Concil
                 name="conciliation"
                 checked={!approved}
                 onChange={() => setApproved(false)}
-                className="text-blue-600"
+                className="accent-[var(--color-primary)]"
               />
-              <span className="text-sm text-gray-700">Requiere correccion</span>
+              <span className="text-sm text-[var(--color-text-secondary)]">Requiere correccion</span>
             </label>
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
             Observaciones
           </label>
           <textarea
@@ -63,7 +63,7 @@ export function ConciliationDialog({ open, onClose, onConfirm, loading }: Concil
             placeholder="Observaciones de la conciliacion..."
             required
             rows={3}
-            className="flex w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:border-transparent"
           />
         </div>
         <div className="flex gap-2">

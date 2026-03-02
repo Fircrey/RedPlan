@@ -26,7 +26,7 @@ export function InfoWindowContent({ pole, onStatusChange }: InfoWindowContentPro
       {onStatusChange && (
         <div className="mt-2 pt-2 border-t border-gray-200">
           <p className="text-xs text-gray-500 mb-1.5">Estado:</p>
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             {statuses.map((s) => (
               <button
                 key={s}
@@ -34,8 +34,8 @@ export function InfoWindowContent({ pole, onStatusChange }: InfoWindowContentPro
                 title={POLE_STATUS_LABELS[s]}
                 style={{
                   backgroundColor: POLE_STATUS_COLORS[s],
-                  width: 22,
-                  height: 22,
+                  width: 32,
+                  height: 32,
                   borderRadius: '50%',
                   border: pole.status === s ? '3px solid #1e293b' : '2px solid white',
                   cursor: 'pointer',

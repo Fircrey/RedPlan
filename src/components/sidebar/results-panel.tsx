@@ -28,9 +28,9 @@ export function ResultsPanel({
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-blue-50 rounded-lg p-3">
-          <p className="text-xs text-blue-600 font-medium uppercase">Distancia</p>
-          <p className="text-lg font-bold text-blue-900">{formatDistance(totalDistanceMeters)}</p>
+        <div className="bg-[var(--color-primary-light)] rounded-lg p-3">
+          <p className="text-xs text-[var(--color-primary)] font-medium uppercase">Distancia</p>
+          <p className="text-lg font-bold text-[var(--color-text)]">{formatDistance(totalDistanceMeters)}</p>
         </div>
         <div className="bg-green-50 rounded-lg p-3">
           <p className="text-xs text-green-600 font-medium uppercase">Postes</p>
@@ -39,7 +39,7 @@ export function ResultsPanel({
       </div>
 
       <div>
-        <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+        <h3 className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
           Lista de postes
         </h3>
         <div className="max-h-[400px] overflow-y-auto space-y-0.5">

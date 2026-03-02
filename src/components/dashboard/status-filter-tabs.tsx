@@ -17,8 +17,8 @@ export function StatusFilterTabs({ statuses, selected, onSelect, counts }: Statu
         onClick={() => onSelect('all')}
         className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
           selected === 'all'
-            ? 'bg-gray-900 text-white'
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            ? 'bg-[var(--color-text)] text-[var(--color-bg)]'
+            : 'bg-[var(--color-surface-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-border)]'
         }`}
       >
         Todos ({Object.values(counts).reduce((a, b) => a + b, 0)})

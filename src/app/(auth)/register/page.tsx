@@ -5,9 +5,9 @@ export default function RegisterPage() {
   return (
     <>
       <RegisterForm />
-      <p className="text-center text-sm text-gray-500 mt-4">
+      <p className="text-center text-sm text-[var(--color-text-muted)] mt-4">
         Ya tienes cuenta?{' '}
-        <Link href="/login" className="text-blue-600 hover:underline font-medium">
+        <Link href="/login" className="text-[var(--color-primary)] hover:underline font-medium">
           Ingresar
         </Link>
       </p>

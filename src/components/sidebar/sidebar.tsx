@@ -74,7 +74,7 @@ export function Sidebar({
   showAudit,
 }: SidebarProps) {
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-[var(--color-surface)]">
       {/* Workflow Actions */}
       <WorkflowActions
         projectStatus={projectStatus}
@@ -84,8 +84,8 @@ export function Sidebar({
         transitioning={transitioning}
       />
 
-      <div className="p-4 border-b border-gray-100">
-        <h2 className="font-semibold text-gray-900">Calcular postes</h2>
+      <div className="p-4 border-b border-[var(--color-border-light)]">
+        <h2 className="font-semibold text-[var(--color-text)]">Calcular postes</h2>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -108,7 +108,7 @@ export function Sidebar({
         )}
 
         {/* Budget */}
-        <div className="border-t border-gray-100 pt-4">
+        <div className="border-t border-[var(--color-border-light)] pt-4">
           <BudgetPanel
             items={budgetItems}
             loading={budgetLoading}
@@ -120,7 +120,7 @@ export function Sidebar({
         </div>
 
         {/* Comments */}
-        <div className="border-t border-gray-100 pt-4">
+        <div className="border-t border-[var(--color-border-light)] pt-4">
           <CommentsPanel
             comments={comments}
             loading={commentsLoading}
@@ -131,14 +131,14 @@ export function Sidebar({
 
         {/* Audit */}
         {showAudit && (
-          <div className="border-t border-gray-100 pt-4">
+          <div className="border-t border-[var(--color-border-light)] pt-4">
             <AuditPanel entries={auditEntries} loading={auditLoading} />
           </div>
         )}
       </div>
 
       {poles.length > 0 && (
-        <div className="p-4 border-t border-gray-100 space-y-2">
+        <div className="p-4 border-t border-[var(--color-border-light)] space-y-2">
           <ExportButton poles={poles} segments={segments} />
         </div>
       )}

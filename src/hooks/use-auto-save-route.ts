@@ -25,8 +25,10 @@ export function useAutoSaveRoute({
   routeRestored,
 }: UseAutoSaveRouteParams) {
   const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
   const hasHydrated = useRef(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     // Don't save if there's nothing to save
@@ -44,6 +46,7 @@ export function useAutoSaveRoute({
 
     // Debounce 1.5s
     if (timerRef.current) clearTimeout(timerRef.current)
+    setSaved(false)
 
     timerRef.current = setTimeout(async () => {
       setSaving(true)
@@ -70,6 +73,9 @@ export function useAutoSaveRoute({
             segments,
           }),
         })
+        setSaved(true)
+        if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+        savedTimerRef.current = setTimeout(() => setSaved(false), 2000)
       } catch {
         // Silent fail — will retry on next change
       } finally {
@@ -82,5 +88,11 @@ export function useAutoSaveRoute({
     }
   }, [projectId, poles, polylinePoints, totalDistanceMeters, lastRequest, segments, routeRestored])
 
-  return { saving }
+  useEffect(() => {
+    return () => {
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+    }
+  }, [])
+
+  return { saving, saved }
 }

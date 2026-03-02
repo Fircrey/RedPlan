@@ -34,28 +34,28 @@ export function SegmentSelector({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-        Simbologia de linea
+      <h3 className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide">
+        Segmentos de linea
       </h3>
 
       <div className="flex items-center gap-2">
-        <label className="text-xs text-gray-600 w-12">Desde</label>
+        <label className="text-xs text-[var(--color-text-secondary)] w-12">Desde</label>
         <input
           type="number"
           min={1}
           max={totalPoles - 1}
           value={fromPole}
           onChange={(e) => setFromPole(Number(e.target.value))}
-          className="w-16 px-2 py-1 text-sm border border-gray-300 rounded"
+          className="w-16 px-2 py-1 text-sm border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] rounded"
         />
-        <label className="text-xs text-gray-600 w-12">Hasta</label>
+        <label className="text-xs text-[var(--color-text-secondary)] w-12">Hasta</label>
         <input
           type="number"
           min={2}
           max={totalPoles}
           value={toPole}
           onChange={(e) => setToPole(Number(e.target.value))}
-          className="w-16 px-2 py-1 text-sm border border-gray-300 rounded"
+          className="w-16 px-2 py-1 text-sm border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] rounded"
         />
       </div>
 
@@ -66,8 +66,8 @@ export function SegmentSelector({
             onClick={() => setSymbology(s)}
             className={`flex-1 py-1.5 text-sm font-mono rounded border transition-colors ${
               symbology === s
-                ? 'bg-blue-100 border-blue-400 text-blue-800'
-                : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
+                ? 'bg-[var(--color-primary-light)] border-[var(--color-primary)] text-[var(--color-primary-hover)]'
+                : 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-secondary)]'
             }`}
           >
             {LINE_SYMBOLOGY_CONFIG[s].label}
@@ -81,13 +81,13 @@ export function SegmentSelector({
 
       {segments.length > 0 && (
         <div className="space-y-1">
-          <p className="text-xs text-gray-500 font-medium">Tramos asignados:</p>
+          <p className="text-xs text-[var(--color-text-muted)] font-medium">Tramos asignados:</p>
           {segments.map((seg, i) => (
             <div
               key={`${seg.fromPole}-${seg.toPole}-${seg.symbology}`}
-              className="flex items-center justify-between bg-gray-50 rounded px-2 py-1.5 text-xs"
+              className="flex items-center justify-between bg-[var(--color-surface-secondary)] rounded px-2 py-1.5 text-xs"
             >
-              <span className="text-gray-700">
+              <span className="text-[var(--color-text-secondary)]">
                 Postes {seg.fromPole}-{seg.toPole}:{' '}
                 <span className="font-mono font-semibold">
                   {LINE_SYMBOLOGY_CONFIG[seg.symbology].label}

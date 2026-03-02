@@ -38,7 +38,7 @@ export function CreateProjectDialog({ open, onClose, onCreate, zones }: CreatePr
       <h2 className="text-lg font-semibold mb-4">Nuevo proyecto</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+          <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">Nombre</label>
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -48,7 +48,7 @@ export function CreateProjectDialog({ open, onClose, onCreate, zones }: CreatePr
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
             Descripcion (opcional)
           </label>
           <Input
@@ -58,11 +58,11 @@ export function CreateProjectDialog({ open, onClose, onCreate, zones }: CreatePr
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Zona</label>
+          <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">Zona</label>
           <select
             value={zoneId}
             onChange={(e) => setZoneId(e.target.value)}
-            className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex h-10 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:border-transparent"
           >
             <option value="">Sin zona</option>
             {zones.map((zone) => (
