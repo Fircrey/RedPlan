@@ -1,17 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import type { Pole, RouteSegment } from '@/types'
+import { NextRequest } from 'next/server'
+import { getAuthenticatedUser, verifyProjectOwnership } from '@/lib/api-auth'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-response'
+import { routeSaveSchema } from '@/lib/validations'
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id: projectId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user } = await getAuthenticatedUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiUnauthorized()
   }
 
   // Get the most recent route for this project
@@ -24,11 +24,11 @@ export async function GET(
     .maybeSingle()
 
   if (routeError) {
-    return NextResponse.json({ error: routeError.message }, { status: 500 })
+    return apiServerError(routeError.message)
   }
 
   if (!route) {
-    return NextResponse.json(null)
+    return apiSuccess(null)
   }
 
   // Get poles and segments for the route
@@ -45,14 +45,14 @@ export async function GET(
   ])
 
   if (polesResult.error) {
-    return NextResponse.json({ error: polesResult.error.message }, { status: 500 })
+    return apiServerError(polesResult.error.message)
   }
 
   if (segmentsResult.error) {
-    return NextResponse.json({ error: segmentsResult.error.message }, { status: 500 })
+    return apiServerError(segmentsResult.error.message)
   }
 
-  return NextResponse.json({
+  return apiSuccess({
     ...route,
     poles: polesResult.data,
     segments: segmentsResult.data,
@@ -64,14 +64,25 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id: projectId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user } = await getAuthenticatedUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiUnauthorized()
+  }
+
+  // Verify ownership
+  const project = await verifyProjectOwnership(supabase, projectId, user.id)
+  if (!project) {
+    return apiNotFound('Project not found')
   }
 
   const body = await request.json()
+  const parsed = routeSaveSchema.safeParse(body)
+
+  if (!parsed.success) {
+    return apiError(parsed.error.issues.map((i) => i.message).join(', '))
+  }
+
   const {
     originLat,
     originLng,
@@ -84,7 +95,7 @@ export async function PUT(
     totalPoles,
     poles,
     segments,
-  } = body
+  } = parsed.data
 
   // Find existing route for this project (most recent)
   const { data: existingRoute } = await supabase
@@ -115,7 +126,7 @@ export async function PUT(
       .eq('id', existingRoute.id)
 
     if (updateError) {
-      return NextResponse.json({ error: updateError.message }, { status: 500 })
+      return apiServerError(updateError.message)
     }
 
     routeId = existingRoute.id
@@ -146,15 +157,15 @@ export async function PUT(
       .single()
 
     if (insertError || !newRoute) {
-      return NextResponse.json({ error: insertError?.message ?? 'Insert failed' }, { status: 500 })
+      return apiServerError(insertError?.message ?? 'Insert failed')
     }
 
     routeId = newRoute.id
   }
 
   // Insert new poles
-  if (poles && Array.isArray(poles) && poles.length > 0) {
-    const poleRows = poles.map((pole: Pole) => ({
+  if (poles.length > 0) {
+    const poleRows = poles.map((pole) => ({
       route_id: routeId,
       sequence_number: pole.sequenceNumber,
       lat: pole.lat,
@@ -166,13 +177,13 @@ export async function PUT(
     const { error: polesError } = await supabase.from('poles').insert(poleRows)
 
     if (polesError) {
-      return NextResponse.json({ error: polesError.message }, { status: 500 })
+      return apiServerError(polesError.message)
     }
   }
 
   // Insert new segments
-  if (segments && Array.isArray(segments) && segments.length > 0) {
-    const segmentRows = segments.map((seg: RouteSegment) => ({
+  if (segments.length > 0) {
+    const segmentRows = segments.map((seg) => ({
       route_id: routeId,
       from_pole: seg.fromPole,
       to_pole: seg.toPole,
@@ -182,9 +193,9 @@ export async function PUT(
     const { error: segmentsError } = await supabase.from('route_segments').insert(segmentRows)
 
     if (segmentsError) {
-      return NextResponse.json({ error: segmentsError.message }, { status: 500 })
+      return apiServerError(segmentsError.message)
     }
   }
 
-  return NextResponse.json({ id: routeId })
+  return apiSuccess({ id: routeId })
 }

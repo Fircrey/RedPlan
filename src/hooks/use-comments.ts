@@ -12,16 +12,18 @@ export function useComments(projectId: string) {
     try {
       const res = await fetch(`/api/projects/${projectId}/comments`)
       if (!res.ok) throw new Error('Error al cargar comentarios')
-      const data = await res.json()
+      const json = await res.json()
+      const data = json.data?.comments ?? json.data ?? json
+      const list = (Array.isArray(data) ? data : []) as Record<string, unknown>[]
       setComments(
-        data.map((c: Record<string, unknown>) => ({
-          id: c.id,
-          projectId: c.project_id,
-          authorId: c.author_id,
-          authorEmail: c.author_email,
-          authorRole: c.author_role,
-          content: c.content,
-          createdAt: c.created_at,
+        list.map((c): ProjectComment => ({
+          id: c.id as string,
+          projectId: c.project_id as string,
+          authorId: c.author_id as string,
+          authorEmail: c.author_email as string | undefined,
+          authorRole: c.author_role as ProjectComment['authorRole'],
+          content: c.content as string,
+          createdAt: c.created_at as string,
         })),
       )
     } catch {

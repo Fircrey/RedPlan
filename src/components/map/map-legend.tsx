@@ -8,7 +8,7 @@ const symbologies: LineSymbology[] = ['single', 'double', 'triple']
 
 export function MapLegend() {
   return (
-    <div className="absolute bottom-4 left-4 z-10 bg-[var(--color-surface)] rounded-lg shadow-md p-3 text-xs">
+    <div className="absolute bottom-4 left-4 md:bottom-4 md:left-4 bottom-[100px] z-10 bg-[var(--color-surface)] rounded-lg shadow-md p-3 text-xs">
       <p className="font-semibold text-[var(--color-text-secondary)] mb-2">Leyenda</p>
 
       <div className="space-y-1 mb-3">

@@ -1,7 +1,8 @@
 'use client'
 
-import { Map, InfoWindow } from '@vis.gl/react-google-maps'
-import { useState } from 'react'
+import { Map, InfoWindow, useMap } from '@vis.gl/react-google-maps'
+import { useState, useEffect, useRef, memo } from 'react'
+import { MarkerClusterer } from '@googlemaps/markerclusterer'
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from '@/lib/constants'
 import { PoleMarker } from './pole-marker'
 import { RoutePolyline } from './route-polyline'
@@ -9,6 +10,8 @@ import { MapControls } from './map-controls'
 import { MapLegend } from './map-legend'
 import { InfoWindowContent } from './info-window-content'
 import type { Pole, LatLng, PoleStatus, RouteSegment } from '@/types'
+
+const CLUSTERING_THRESHOLD = 500
 
 interface MapViewProps {
   poles: Pole[]
@@ -19,7 +22,7 @@ interface MapViewProps {
   segments: RouteSegment[]
 }
 
-export function MapView({
+export const MapView = memo(function MapView({
   poles,
   polylinePoints,
   selectedPoleIndex,
@@ -28,6 +31,7 @@ export function MapView({
   segments,
 }: MapViewProps) {
   const [infoWindowPole, setInfoWindowPole] = useState<{ pole: Pole; index: number } | null>(null)
+  const useClustering = poles.length > CLUSTERING_THRESHOLD
 
   function handlePoleClick(pole: Pole, index: number) {
     onSelectPole(index)
@@ -45,14 +49,21 @@ export function MapView({
         className="w-full h-full"
       >
         <RoutePolyline points={polylinePoints} poles={poles} segments={segments} />
-        {poles.map((pole, index) => (
-          <PoleMarker
-            key={pole.sequenceNumber}
-            pole={pole}
-            isSelected={selectedPoleIndex === index}
-            onClick={() => handlePoleClick(pole, index)}
+        {!useClustering &&
+          poles.map((pole, index) => (
+            <PoleMarker
+              key={pole.sequenceNumber}
+              pole={pole}
+              isSelected={selectedPoleIndex === index}
+              onClick={() => handlePoleClick(pole, index)}
+            />
+          ))}
+        {useClustering && (
+          <ClusteredMarkers
+            poles={poles}
+            onPoleClick={handlePoleClick}
           />
-        ))}
+        )}
         {infoWindowPole && (
           <InfoWindow
             position={{ lat: infoWindowPole.pole.lat, lng: infoWindowPole.pole.lng }}
@@ -78,4 +89,53 @@ export function MapView({
       {poles.length > 0 && <MapLegend />}
     </div>
   )
+})
+
+/** Renders poles with MarkerClusterer for large datasets */
+function ClusteredMarkers({
+  poles,
+  onPoleClick,
+}: {
+  poles: Pole[]
+  onPoleClick: (pole: Pole, index: number) => void
+}) {
+  const map = useMap()
+  const clustererRef = useRef<MarkerClusterer | null>(null)
+  const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([])
+
+  useEffect(() => {
+    if (!map) return
+
+    // Clean up old markers
+    markersRef.current.forEach((m) => (m.map = null))
+    markersRef.current = []
+
+    const markers = poles.map((pole, index) => {
+      const marker = new google.maps.marker.AdvancedMarkerElement({
+        position: { lat: pole.lat, lng: pole.lng },
+        title: `Poste #${pole.sequenceNumber} (${pole.type})`,
+      })
+      marker.addListener('click', () => onPoleClick(pole, index))
+      return marker
+    })
+    markersRef.current = markers
+
+    if (clustererRef.current) {
+      clustererRef.current.clearMarkers()
+      clustererRef.current.addMarkers(markers)
+    } else {
+      clustererRef.current = new MarkerClusterer({
+        map,
+        markers,
+      })
+    }
+
+    return () => {
+      if (clustererRef.current) {
+        clustererRef.current.clearMarkers()
+      }
+    }
+  }, [map, poles, onPoleClick])
+
+  return null
 }

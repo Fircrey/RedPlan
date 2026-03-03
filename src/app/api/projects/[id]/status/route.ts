@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextRequest } from 'next/server'
+import { getAuthenticatedUser } from '@/lib/api-auth'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiForbidden, apiServerError } from '@/lib/api-response'
+import { statusTransitionSchema } from '@/lib/validations'
 import { STATUS_TRANSITIONS } from '@/lib/constants'
 import type { ProjectStatus, UserRole } from '@/types'
 
@@ -8,11 +10,10 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user } = await getAuthenticatedUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiUnauthorized()
   }
 
   // Get user profile
@@ -23,7 +24,7 @@ export async function PATCH(
     .single()
 
   if (profileError || !profile) {
-    return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    return apiNotFound('Profile not found')
   }
 
   const role = profile.role as UserRole
@@ -36,33 +37,31 @@ export async function PATCH(
     .single()
 
   if (projectError || !project) {
-    return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+    return apiNotFound('Project not found')
   }
 
   const body = await request.json()
-  const { status: newStatus, comment } = body as { status: ProjectStatus; comment?: string }
+  const parsed = statusTransitionSchema.safeParse(body)
 
-  if (!newStatus) {
-    return NextResponse.json({ error: 'New status is required' }, { status: 400 })
+  if (!parsed.success) {
+    return apiError(parsed.error.issues.map((i) => i.message).join(', '))
   }
+
+  const { status: newStatus, comment } = parsed.data
 
   // Validate transition
   const currentStatus = project.status as ProjectStatus
   const allowedTransitions = STATUS_TRANSITIONS[role]?.[currentStatus]
 
   if (!allowedTransitions || !allowedTransitions.includes(newStatus)) {
-    return NextResponse.json(
-      { error: `Transition from '${currentStatus}' to '${newStatus}' not allowed for role '${role}'` },
-      { status: 403 },
+    return apiForbidden(
+      `Transition from '${currentStatus}' to '${newStatus}' not allowed for role '${role}'`,
     )
   }
 
   // Require comment for rejection or correction
   if ((newStatus === 'rechazado' || newStatus === 'en_correccion') && !comment) {
-    return NextResponse.json(
-      { error: 'Comment is required for rejection or correction' },
-      { status: 400 },
-    )
+    return apiError('Comment is required for rejection or correction')
   }
 
   // Update project status
@@ -72,14 +71,14 @@ export async function PATCH(
     .eq('id', id)
 
   if (updateError) {
-    return NextResponse.json({ error: updateError.message }, { status: 500 })
+    return apiServerError(updateError.message)
   }
 
   // Insert audit log
   await supabase.from('audit_log').insert({
     project_id: id,
     user_id: user.id,
-    action: `status_change`,
+    action: 'status_change',
     details: {
       from: currentStatus,
       to: newStatus,
@@ -97,5 +96,5 @@ export async function PATCH(
     })
   }
 
-  return NextResponse.json({ success: true, status: newStatus })
+  return apiSuccess({ status: newStatus })
 }

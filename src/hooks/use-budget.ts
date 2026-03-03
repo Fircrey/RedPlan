@@ -12,14 +12,16 @@ export function useBudget(projectId: string) {
     try {
       const res = await fetch(`/api/projects/${projectId}/budget`)
       if (!res.ok) throw new Error('Error al cargar presupuesto')
-      const data = await res.json()
+      const json = await res.json()
+      const data = json.data?.items ?? json.data ?? json
+      const list = (Array.isArray(data) ? data : []) as Record<string, unknown>[]
       setItems(
-        data.map((i: Record<string, unknown>) => ({
-          id: i.id,
-          projectId: i.project_id,
-          description: i.description,
+        list.map((i): BudgetItem => ({
+          id: i.id as string,
+          projectId: i.project_id as string,
+          description: i.description as string,
           quantity: Number(i.quantity),
-          unit: i.unit,
+          unit: i.unit as string,
           unitCost: Number(i.unit_cost),
           total: Number(i.total),
         })),

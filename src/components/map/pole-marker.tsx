@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { AdvancedMarker } from '@vis.gl/react-google-maps'
 import { POLE_STATUS_COLORS } from '@/lib/constants'
 import type { Pole } from '@/types'
@@ -10,7 +11,7 @@ interface PoleMarkerProps {
   onClick: () => void
 }
 
-export function PoleMarker({ pole, isSelected, onClick }: PoleMarkerProps) {
+export const PoleMarker = memo(function PoleMarker({ pole, isSelected, onClick }: PoleMarkerProps) {
   const color = POLE_STATUS_COLORS[pole.status]
   const size = isSelected ? 24 : 18
 
@@ -33,7 +34,7 @@ export function PoleMarker({ pole, isSelected, onClick }: PoleMarkerProps) {
             width: size,
             height: size,
             backgroundColor: color,
-            border: isSelected ? '3px solid #1e40af' : '2px solid white',
+            border: isSelected ? '3px solid var(--color-primary, #1e40af)' : '2px solid white',
             borderRadius: '50%',
             boxShadow: isSelected
               ? '0 0 0 2px white, 0 2px 8px rgba(0,0,0,0.5)'
@@ -46,7 +47,7 @@ export function PoleMarker({ pole, isSelected, onClick }: PoleMarkerProps) {
             marginTop: 2,
             fontSize: 10,
             fontWeight: 700,
-            color: '#1e293b',
+            color: 'var(--color-text, #1e293b)',
             textShadow: '0 0 3px white, 0 0 3px white',
             lineHeight: 1,
             userSelect: 'none',
@@ -57,4 +58,4 @@ export function PoleMarker({ pole, isSelected, onClick }: PoleMarkerProps) {
       </div>
     </AdvancedMarker>
   )
-}
+})

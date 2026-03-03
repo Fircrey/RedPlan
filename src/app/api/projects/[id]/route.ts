@@ -1,16 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextRequest } from 'next/server'
+import { getAuthenticatedUser, verifyProjectOwnership } from '@/lib/api-auth'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-response'
+import { projectUpdateSchema } from '@/lib/validations'
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user } = await getAuthenticatedUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiUnauthorized()
   }
 
   const { data, error } = await supabase
@@ -19,11 +20,11 @@ export async function GET(
     .eq('id', id)
     .single()
 
-  if (error) {
-    return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+  if (error || !data) {
+    return apiNotFound('Project not found')
   }
 
-  return NextResponse.json(data)
+  return apiSuccess(data)
 }
 
 export async function PUT(
@@ -31,28 +32,37 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user } = await getAuthenticatedUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiUnauthorized()
+  }
+
+  // Verify ownership
+  const project = await verifyProjectOwnership(supabase, id, user.id)
+  if (!project) {
+    return apiNotFound('Project not found')
   }
 
   const body = await request.json()
-  const { name, description } = body
+  const parsed = projectUpdateSchema.safeParse(body)
+
+  if (!parsed.success) {
+    return apiError(parsed.error.issues.map((i) => i.message).join(', '))
+  }
 
   const { data, error } = await supabase
     .from('projects')
-    .update({ name, description })
+    .update(parsed.data)
     .eq('id', id)
     .select()
     .single()
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return apiServerError(error.message)
   }
 
-  return NextResponse.json(data)
+  return apiSuccess(data)
 }
 
 export async function DELETE(
@@ -60,11 +70,16 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user } = await getAuthenticatedUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiUnauthorized()
+  }
+
+  // Verify ownership
+  const project = await verifyProjectOwnership(supabase, id, user.id)
+  if (!project) {
+    return apiNotFound('Project not found')
   }
 
   const { error } = await supabase
@@ -73,8 +88,8 @@ export async function DELETE(
     .eq('id', id)
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return apiServerError(error.message)
   }
 
-  return NextResponse.json({ success: true })
+  return apiSuccess({ deleted: true })
 }

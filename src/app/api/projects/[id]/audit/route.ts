@@ -1,26 +1,35 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextRequest } from 'next/server'
+import { getAuthenticatedUser } from '@/lib/api-auth'
+import { apiSuccess, apiUnauthorized, apiServerError } from '@/lib/api-response'
+import { paginationSchema } from '@/lib/validations'
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user } = await getAuthenticatedUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiUnauthorized()
   }
 
-  const { data, error } = await supabase
+  const url = new URL(request.url)
+  const pagination = paginationSchema.safeParse({
+    limit: url.searchParams.get('limit') ?? undefined,
+    offset: url.searchParams.get('offset') ?? undefined,
+  })
+  const { limit, offset } = pagination.success ? pagination.data : { limit: 50, offset: 0 }
+
+  const { data, error, count } = await supabase
     .from('audit_log')
-    .select('*, profiles:user_id(email)')
+    .select('*, profiles:user_id(email)', { count: 'exact' })
     .eq('project_id', id)
     .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return apiServerError(error.message)
   }
 
   const entries = data.map((e: Record<string, unknown>) => {
@@ -36,5 +45,5 @@ export async function GET(
     }
   })
 
-  return NextResponse.json(entries)
+  return apiSuccess({ entries, total: count ?? entries.length })
 }

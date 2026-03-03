@@ -9,7 +9,17 @@ export async function fetchRoute(
 ): Promise<RouteProviderResult> {
   switch (mode) {
     case 'road_osrm':
-      return fetchOSRMRoute(origin, destination)
+      try {
+        return await fetchOSRMRoute(origin, destination)
+      } catch (osrmError) {
+        console.warn('OSRM failed, falling back to Google Directions:', osrmError)
+        try {
+          return await fetchGoogleDirectionsRoute(origin, destination)
+        } catch {
+          // If fallback also fails, throw the original OSRM error
+          throw osrmError
+        }
+      }
     case 'road_google':
       return fetchGoogleDirectionsRoute(origin, destination)
     default:

@@ -32,9 +32,9 @@ export function ResultsPanel({
           <p className="text-xs text-[var(--color-primary)] font-medium uppercase">Distancia</p>
           <p className="text-lg font-bold text-[var(--color-text)]">{formatDistance(totalDistanceMeters)}</p>
         </div>
-        <div className="bg-green-50 rounded-lg p-3">
-          <p className="text-xs text-green-600 font-medium uppercase">Postes</p>
-          <p className="text-lg font-bold text-green-900">{poles.length}</p>
+        <div className="bg-[var(--color-success-light,var(--color-primary-light))] rounded-lg p-3">
+          <p className="text-xs text-[var(--color-success,var(--color-primary))] font-medium uppercase">Postes</p>
+          <p className="text-lg font-bold text-[var(--color-text)]">{poles.length}</p>
         </div>
       </div>
 

@@ -25,16 +25,36 @@ export function BudgetPanel({ items, loading, grandTotal, onAdd, onDelete, edita
   const [unitCost, setUnitCost] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!description.trim() || !quantity || !unitCost) return
+    setFormError(null)
+
+    if (!description.trim()) {
+      setFormError('Descripcion es requerida')
+      return
+    }
+
+    const qty = Number(quantity)
+    const cost = Number(unitCost)
+
+    if (isNaN(qty) || qty <= 0) {
+      setFormError('Cantidad debe ser un numero positivo')
+      return
+    }
+
+    if (isNaN(cost) || cost < 0) {
+      setFormError('Costo unitario debe ser un numero no negativo')
+      return
+    }
+
     setSubmitting(true)
     const success = await onAdd({
       description: description.trim(),
-      quantity: Number(quantity),
+      quantity: qty,
       unit,
-      unitCost: Number(unitCost),
+      unitCost: cost,
     })
     if (success) {
       setDescription('')
@@ -42,6 +62,7 @@ export function BudgetPanel({ items, loading, grandTotal, onAdd, onDelete, edita
       setUnit('und')
       setUnitCost('')
       setShowForm(false)
+      setFormError(null)
     }
     setSubmitting(false)
   }
@@ -72,10 +93,15 @@ export function BudgetPanel({ items, loading, grandTotal, onAdd, onDelete, edita
 
       {showForm && (
         <form onSubmit={handleSubmit} className="space-y-2 bg-[var(--color-surface-secondary)] rounded-lg p-3">
+          {formError && (
+            <p className="text-xs text-red-600" role="alert">{formError}</p>
+          )}
           <Input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Descripcion"
+            aria-label="Descripcion del item"
+            maxLength={500}
             required
           />
           <div className="flex gap-2">
@@ -84,6 +110,7 @@ export function BudgetPanel({ items, loading, grandTotal, onAdd, onDelete, edita
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               placeholder="Cant."
+              aria-label="Cantidad"
               min="0.01"
               step="0.01"
               required
@@ -92,6 +119,7 @@ export function BudgetPanel({ items, loading, grandTotal, onAdd, onDelete, edita
             <select
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
+              aria-label="Unidad de medida"
               className="h-10 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]"
             >
               {BUDGET_UNITS.map((u) => (
@@ -103,6 +131,7 @@ export function BudgetPanel({ items, loading, grandTotal, onAdd, onDelete, edita
               value={unitCost}
               onChange={(e) => setUnitCost(e.target.value)}
               placeholder="Costo unit."
+              aria-label="Costo unitario"
               min="0"
               step="0.01"
               required
@@ -135,6 +164,7 @@ export function BudgetPanel({ items, loading, grandTotal, onAdd, onDelete, edita
                   {editable && (
                     <button
                       onClick={() => setDeleteId(item.id)}
+                      aria-label={`Eliminar ${item.description}`}
                       className="text-[var(--color-text-muted)] hover:text-red-600 text-xs"
                     >
                       x

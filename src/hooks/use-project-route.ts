@@ -22,7 +22,8 @@ export function useProjectRoute(projectId: string) {
       const res = await fetch(`/api/projects/${projectId}/routes`)
       if (!res.ok) throw new Error('Error al cargar ruta')
 
-      const route = await res.json()
+      const json = await res.json()
+      const route = json.data ?? json
 
       if (!route) {
         setData(null)

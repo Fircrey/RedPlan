@@ -35,6 +35,7 @@ export function MobileDrawer({ children, title = 'Panel' }: MobileDrawerProps) {
 
       {/* Mobile: bottom sheet */}
       <div
+        aria-label={title}
         className={`md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--color-surface)] border-t border-[var(--color-border)] rounded-t-2xl shadow-lg transition-[max-height] duration-300 ease-in-out ${
           expanded ? 'max-h-[70vh]' : 'max-h-[80px]'
         }`}
@@ -44,6 +45,7 @@ export function MobileDrawer({ children, title = 'Panel' }: MobileDrawerProps) {
         {/* Drag handle */}
         <button
           onClick={() => setExpanded(!expanded)}
+          aria-label={expanded ? `Cerrar ${title}` : `Abrir ${title}`}
           className="w-full flex flex-col items-center pt-2 pb-3 px-4 cursor-pointer"
         >
           <div className="w-10 h-1 rounded-full bg-[var(--color-border)] mb-2" />

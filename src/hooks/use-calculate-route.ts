@@ -43,7 +43,8 @@ export function useCalculateRoute(): UseCalculateRouteReturn {
         throw new Error(json.error || 'Error en el calculo')
       }
 
-      const response = json as CalculateResponse
+      // API returns { data: CalculateResponse } with standardized wrapper
+      const response = (json.data ?? json) as CalculateResponse
       setPoles(response.poles)
       setPolylinePoints(response.polylinePoints)
       setTotalDistanceMeters(response.totalDistanceMeters)

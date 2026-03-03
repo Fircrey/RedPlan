@@ -1,41 +1,52 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextRequest } from 'next/server'
+import { getAuthenticatedUser, verifyProjectOwnership } from '@/lib/api-auth'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-response'
+import { budgetItemUpdateSchema } from '@/lib/validations'
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; itemId: string }> },
 ) {
   const { id, itemId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user } = await getAuthenticatedUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiUnauthorized()
+  }
+
+  // Verify ownership
+  const project = await verifyProjectOwnership(supabase, id, user.id)
+  if (!project) {
+    return apiNotFound('Project not found')
   }
 
   const body = await request.json()
-  const { description, quantity, unit, unit_cost } = body
+  const parsed = budgetItemUpdateSchema.safeParse(body)
+
+  if (!parsed.success) {
+    return apiError(parsed.error.issues.map((i) => i.message).join(', '))
+  }
 
   const { data, error } = await supabase
     .from('budget_items')
-    .update({ description, quantity, unit, unit_cost })
+    .update(parsed.data)
     .eq('id', itemId)
     .eq('project_id', id)
     .select()
     .single()
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return apiServerError(error.message)
   }
 
   await supabase.from('audit_log').insert({
     project_id: id,
     user_id: user.id,
     action: 'budget_item_updated',
-    details: { itemId, description, quantity, unit, unit_cost },
+    details: { itemId, ...parsed.data },
   })
 
-  return NextResponse.json(data)
+  return apiSuccess(data)
 }
 
 export async function DELETE(
@@ -43,11 +54,16 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; itemId: string }> },
 ) {
   const { id, itemId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user } = await getAuthenticatedUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiUnauthorized()
+  }
+
+  // Verify ownership
+  const project = await verifyProjectOwnership(supabase, id, user.id)
+  if (!project) {
+    return apiNotFound('Project not found')
   }
 
   const { error } = await supabase
@@ -57,7 +73,7 @@ export async function DELETE(
     .eq('project_id', id)
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return apiServerError(error.message)
   }
 
   await supabase.from('audit_log').insert({
@@ -67,5 +83,5 @@ export async function DELETE(
     details: { itemId },
   })
 
-  return NextResponse.json({ success: true })
+  return apiSuccess({ deleted: true })
 }

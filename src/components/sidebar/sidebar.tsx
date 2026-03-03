@@ -8,71 +8,39 @@ import { BudgetPanel } from './budget-panel'
 import { WorkflowActions } from '@/components/project/workflow-actions'
 import { CommentsPanel } from '@/components/project/comments-panel'
 import { AuditPanel } from '@/components/project/audit-panel'
-import type { Pole, CalculateRequest, RouteSegment, ProjectStatus, UserRole, BudgetItem, ProjectComment, AuditEntry } from '@/types'
+import { useWorkspace } from '@/components/providers/workspace-provider'
 
-interface SidebarProps {
-  poles: Pole[]
-  totalDistanceMeters: number
-  selectedPoleIndex: number | null
-  onSelectPole: (index: number | null) => void
-  onCalculate: (data: CalculateRequest) => void
-  isCalculating: boolean
-  segments: RouteSegment[]
-  onAddSegment: (segment: RouteSegment) => void
-  onRemoveSegment: (index: number) => void
-  // Workflow props
-  projectStatus: ProjectStatus
-  userRole: UserRole
-  availableTransitions: ProjectStatus[]
-  onTransition: (newStatus: ProjectStatus, comment?: string) => Promise<{ success: boolean; error: string | null }>
-  transitioning: boolean
-  // Budget props
-  budgetItems: BudgetItem[]
-  budgetLoading: boolean
-  budgetGrandTotal: number
-  onAddBudgetItem: (item: { description: string; quantity: number; unit: string; unitCost: number }) => Promise<boolean>
-  onDeleteBudgetItem: (itemId: string) => Promise<boolean>
-  budgetEditable: boolean
-  // Comments props
-  comments: ProjectComment[]
-  commentsLoading: boolean
-  onAddComment: (content: string) => Promise<boolean>
-  canComment: boolean
-  // Audit props
-  auditEntries: AuditEntry[]
-  auditLoading: boolean
-  showAudit: boolean
-}
+export function Sidebar() {
+  const {
+    poles,
+    totalDistanceMeters,
+    selectedPoleIndex,
+    onSelectPole,
+    onCalculate,
+    isCalculating,
+    segments,
+    onAddSegment,
+    onRemoveSegment,
+    projectStatus,
+    userRole,
+    availableTransitions,
+    onTransition,
+    transitioning,
+    budgetItems,
+    budgetLoading,
+    budgetGrandTotal,
+    onAddBudgetItem,
+    onDeleteBudgetItem,
+    budgetEditable,
+    comments,
+    commentsLoading,
+    onAddComment,
+    canComment,
+    auditEntries,
+    auditLoading,
+    showAudit,
+  } = useWorkspace()
 
-export function Sidebar({
-  poles,
-  totalDistanceMeters,
-  selectedPoleIndex,
-  onSelectPole,
-  onCalculate,
-  isCalculating,
-  segments,
-  onAddSegment,
-  onRemoveSegment,
-  projectStatus,
-  userRole,
-  availableTransitions,
-  onTransition,
-  transitioning,
-  budgetItems,
-  budgetLoading,
-  budgetGrandTotal,
-  onAddBudgetItem,
-  onDeleteBudgetItem,
-  budgetEditable,
-  comments,
-  commentsLoading,
-  onAddComment,
-  canComment,
-  auditEntries,
-  auditLoading,
-  showAudit,
-}: SidebarProps) {
   return (
     <div className="h-full flex flex-col bg-[var(--color-surface)]">
       {/* Workflow Actions */}

@@ -1,26 +1,35 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextRequest } from 'next/server'
+import { getAuthenticatedUser } from '@/lib/api-auth'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-response'
+import { commentCreateSchema, paginationSchema } from '@/lib/validations'
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user } = await getAuthenticatedUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiUnauthorized()
   }
 
-  const { data, error } = await supabase
+  const url = new URL(request.url)
+  const pagination = paginationSchema.safeParse({
+    limit: url.searchParams.get('limit') ?? undefined,
+    offset: url.searchParams.get('offset') ?? undefined,
+  })
+  const { limit, offset } = pagination.success ? pagination.data : { limit: 50, offset: 0 }
+
+  const { data, error, count } = await supabase
     .from('project_comments')
-    .select('*, profiles:author_id(email, role)')
+    .select('*, profiles:author_id(email, role)', { count: 'exact' })
     .eq('project_id', id)
     .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return apiServerError(error.message)
   }
 
   // Flatten the joined profile data
@@ -37,7 +46,7 @@ export async function GET(
     }
   })
 
-  return NextResponse.json(comments)
+  return apiSuccess({ comments, total: count ?? comments.length })
 }
 
 export async function POST(
@@ -45,19 +54,20 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user } = await getAuthenticatedUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiUnauthorized()
   }
 
   const body = await request.json()
-  const { content } = body
+  const parsed = commentCreateSchema.safeParse(body)
 
-  if (!content || typeof content !== 'string') {
-    return NextResponse.json({ error: 'Content is required' }, { status: 400 })
+  if (!parsed.success) {
+    return apiError(parsed.error.issues.map((i) => i.message).join(', '))
   }
+
+  const { content } = parsed.data
 
   const { data, error } = await supabase
     .from('project_comments')
@@ -70,7 +80,7 @@ export async function POST(
     .single()
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return apiServerError(error.message)
   }
 
   await supabase.from('audit_log').insert({
@@ -80,5 +90,5 @@ export async function POST(
     details: { content },
   })
 
-  return NextResponse.json(data, { status: 201 })
+  return apiSuccess(data, 201)
 }

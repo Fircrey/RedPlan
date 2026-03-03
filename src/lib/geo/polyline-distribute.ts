@@ -35,6 +35,12 @@ export function distributePolesAlongPolyline(
   const totalDistance = cumulativeDistances[cumulativeDistances.length - 1]
   const poleCount = Math.ceil(totalDistance / spacingMeters) + 1
 
+  if (poleCount > 50_000) {
+    throw new Error(
+      `Too many poles (${poleCount}). Maximum is 50,000. Increase spacing or shorten the route.`,
+    )
+  }
+
   if (poleCount <= 1) {
     return [
       { sequenceNumber: 1, lat: points[0].lat, lng: points[0].lng, type: 'start', status: 'nuevo' },

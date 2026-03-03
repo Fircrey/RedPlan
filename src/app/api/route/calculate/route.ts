@@ -1,34 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server'
-import type { CalculateRequest, CalculateResponse, LatLng } from '@/types'
+import { NextRequest } from 'next/server'
 import { distributePolesStraightLine } from '@/lib/geo/straight-line'
 import { distributePolesAlongPolyline } from '@/lib/geo/polyline-distribute'
 import { haversineDistance } from '@/lib/geo/haversine'
 import { fetchRoute } from '@/lib/routing/route-provider'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-response'
+import { calculateRequestSchema, MAX_POLE_COUNT } from '@/lib/validations'
+import type { CalculateResponse, LatLng } from '@/types'
 
 export async function POST(request: NextRequest) {
   try {
-    const body: CalculateRequest = await request.json()
+    const body = await request.json()
+    const parsed = calculateRequestSchema.safeParse(body)
 
-    const { originLat, originLng, destLat, destLng, spacingMeters, mode } = body
-
-    // Validate inputs
-    if (
-      typeof originLat !== 'number' ||
-      typeof originLng !== 'number' ||
-      typeof destLat !== 'number' ||
-      typeof destLng !== 'number' ||
-      typeof spacingMeters !== 'number'
-    ) {
-      return NextResponse.json({ error: 'Invalid coordinates or spacing' }, { status: 400 })
+    if (!parsed.success) {
+      return apiError(parsed.error.issues.map((i) => i.message).join(', '))
     }
 
-    if (spacingMeters <= 0) {
-      return NextResponse.json({ error: 'Spacing must be greater than 0' }, { status: 400 })
-    }
-
-    if (!['straight_line', 'road_osrm', 'road_google'].includes(mode)) {
-      return NextResponse.json({ error: 'Invalid mode' }, { status: 400 })
-    }
+    const { originLat, originLng, destLat, destLng, spacingMeters, mode } = parsed.data
 
     const origin: LatLng = { lat: originLat, lng: originLng }
     const destination: LatLng = { lat: destLat, lng: destLng }
@@ -37,6 +25,13 @@ export async function POST(request: NextRequest) {
 
     if (mode === 'straight_line') {
       const poles = distributePolesStraightLine(origin, destination, spacingMeters)
+
+      if (poles.length > MAX_POLE_COUNT) {
+        return apiError(
+          `Too many poles (${poles.length}). Maximum is ${MAX_POLE_COUNT}. Increase spacing or shorten the route.`,
+        )
+      }
+
       const totalDistance = haversineDistance(origin, destination)
 
       response = {
@@ -49,6 +44,12 @@ export async function POST(request: NextRequest) {
       const routeResult = await fetchRoute(origin, destination, mode)
       const poles = distributePolesAlongPolyline(routeResult.polylinePoints, spacingMeters)
 
+      if (poles.length > MAX_POLE_COUNT) {
+        return apiError(
+          `Too many poles (${poles.length}). Maximum is ${MAX_POLE_COUNT}. Increase spacing or shorten the route.`,
+        )
+      }
+
       response = {
         poles,
         polylinePoints: routeResult.polylinePoints,
@@ -57,9 +58,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json(response)
+    return apiSuccess(response)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Internal server error'
-    return NextResponse.json({ error: message }, { status: 500 })
+    return apiServerError(message)
   }
 }

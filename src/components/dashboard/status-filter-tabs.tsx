@@ -12,8 +12,10 @@ interface StatusFilterTabsProps {
 
 export function StatusFilterTabs({ statuses, selected, onSelect, counts }: StatusFilterTabsProps) {
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
+    <div role="tablist" aria-label="Filtrar por estado" className="flex flex-wrap gap-2 mb-6">
       <button
+        role="tab"
+        aria-selected={selected === 'all'}
         onClick={() => onSelect('all')}
         className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
           selected === 'all'
@@ -29,6 +31,8 @@ export function StatusFilterTabs({ statuses, selected, onSelect, counts }: Statu
         return (
           <button
             key={status}
+            role="tab"
+            aria-selected={selected === status}
             onClick={() => onSelect(status)}
             className="px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
             style={

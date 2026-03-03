@@ -1,29 +1,38 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextRequest } from 'next/server'
+import { getAuthenticatedUser, verifyProjectOwnership } from '@/lib/api-auth'
+import { apiSuccess, apiUnauthorized, apiNotFound, apiServerError, apiError } from '@/lib/api-response'
+import { budgetItemCreateSchema, paginationSchema } from '@/lib/validations'
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user } = await getAuthenticatedUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiUnauthorized()
   }
 
-  const { data, error } = await supabase
+  const url = new URL(request.url)
+  const pagination = paginationSchema.safeParse({
+    limit: url.searchParams.get('limit') ?? undefined,
+    offset: url.searchParams.get('offset') ?? undefined,
+  })
+  const { limit, offset } = pagination.success ? pagination.data : { limit: 50, offset: 0 }
+
+  const { data, error, count } = await supabase
     .from('budget_items')
-    .select('*')
+    .select('*', { count: 'exact' })
     .eq('project_id', id)
     .order('created_at')
+    .range(offset, offset + limit - 1)
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return apiServerError(error.message)
   }
 
-  return NextResponse.json(data)
+  return apiSuccess({ items: data, total: count ?? data.length })
 }
 
 export async function POST(
@@ -31,19 +40,26 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user } = await getAuthenticatedUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiUnauthorized()
+  }
+
+  // Verify ownership
+  const project = await verifyProjectOwnership(supabase, id, user.id)
+  if (!project) {
+    return apiNotFound('Project not found')
   }
 
   const body = await request.json()
-  const { description, quantity, unit, unit_cost } = body
+  const parsed = budgetItemCreateSchema.safeParse(body)
 
-  if (!description || !quantity || !unit || unit_cost === undefined) {
-    return NextResponse.json({ error: 'All fields are required' }, { status: 400 })
+  if (!parsed.success) {
+    return apiError(parsed.error.issues.map((i) => i.message).join(', '))
   }
+
+  const { description, quantity, unit, unit_cost } = parsed.data
 
   const { data, error } = await supabase
     .from('budget_items')
@@ -58,7 +74,7 @@ export async function POST(
     .single()
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return apiServerError(error.message)
   }
 
   // Audit log
@@ -69,5 +85,5 @@ export async function POST(
     details: { description, quantity, unit, unit_cost },
   })
 
-  return NextResponse.json(data, { status: 201 })
+  return apiSuccess(data, 201)
 }

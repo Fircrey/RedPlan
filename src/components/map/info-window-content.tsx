@@ -24,20 +24,23 @@ export function InfoWindowContent({ pole, onStatusChange }: InfoWindowContentPro
       <p>Lat: {pole.lat.toFixed(6)}</p>
       <p>Lng: {pole.lng.toFixed(6)}</p>
       {onStatusChange && (
-        <div className="mt-2 pt-2 border-t border-gray-200">
-          <p className="text-xs text-gray-500 mb-1.5">Estado:</p>
-          <div className="flex gap-2">
+        <div className="mt-2 pt-2" style={{ borderTop: '1px solid #d1d5db' }}>
+          <p className="text-xs mb-1.5" style={{ color: '#6b7280' }}>Estado:</p>
+          <div className="flex gap-2" role="radiogroup" aria-label="Estado del poste">
             {statuses.map((s) => (
               <button
                 key={s}
                 onClick={() => onStatusChange(s)}
+                role="radio"
+                aria-checked={pole.status === s}
+                aria-label={POLE_STATUS_LABELS[s]}
                 title={POLE_STATUS_LABELS[s]}
                 style={{
                   backgroundColor: POLE_STATUS_COLORS[s],
-                  width: 32,
-                  height: 32,
+                  width: 44,
+                  height: 44,
                   borderRadius: '50%',
-                  border: pole.status === s ? '3px solid #1e293b' : '2px solid white',
+                  border: pole.status === s ? '3px solid var(--color-text, #1e293b)' : '2px solid white',
                   cursor: 'pointer',
                   boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
                 }}

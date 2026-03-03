@@ -12,16 +12,18 @@ export function useAudit(projectId: string) {
     try {
       const res = await fetch(`/api/projects/${projectId}/audit`)
       if (!res.ok) throw new Error('Error al cargar auditoria')
-      const data = await res.json()
+      const json = await res.json()
+      const data = json.data?.entries ?? json.data ?? json
+      const list = (Array.isArray(data) ? data : []) as Record<string, unknown>[]
       setEntries(
-        data.map((e: Record<string, unknown>) => ({
-          id: e.id,
-          projectId: e.project_id,
-          userId: e.user_id,
-          userEmail: e.user_email,
-          action: e.action,
+        list.map((e): AuditEntry => ({
+          id: e.id as string,
+          projectId: (e.project_id as string) ?? null,
+          userId: e.user_id as string,
+          userEmail: e.user_email as string | undefined,
+          action: e.action as string,
           details: e.details as Record<string, unknown>,
-          createdAt: e.created_at,
+          createdAt: e.created_at as string,
         })),
       )
     } catch {
