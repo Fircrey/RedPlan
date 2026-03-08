@@ -29,6 +29,12 @@ export const POLE_STATUS_LABELS: Record<string, string> = {
 
 export const LINE_COLOR = '#eab308' // yellow-500
 
+export const LINE_SYMBOLOGY_COLORS = {
+  single: '#eab308',  // amarillo (actual)
+  double: '#3b82f6',  // azul
+  triple: '#ef4444',  // rojo
+} as const
+
 export const LINE_SYMBOLOGY_CONFIG = {
   single: { label: '-x-', repeatCount: 1, symbolOffsets: [0.5], gapFraction: 0.06 },
   double: { label: '-xx-', repeatCount: 2, symbolOffsets: [0.46, 0.54], gapFraction: 0.12 },

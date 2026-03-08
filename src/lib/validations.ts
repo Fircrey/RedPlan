@@ -32,6 +32,7 @@ const segmentSchema = z.object({
   fromPole: z.number().int().positive(),
   toPole: z.number().int().positive(),
   symbology: lineSymbologySchema,
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
 })
 
 export const routeSaveSchema = z.object({

@@ -37,6 +37,7 @@ export interface RouteSegment {
   fromPole: number
   toPole: number
   symbology: LineSymbology
+  color?: string
 }
 
 export interface CalculateRequest {

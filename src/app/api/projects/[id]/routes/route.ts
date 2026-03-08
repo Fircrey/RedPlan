@@ -188,6 +188,7 @@ export async function PUT(
       from_pole: seg.fromPole,
       to_pole: seg.toPole,
       symbology: seg.symbology,
+      color: seg.color || null,
     }))
 
     const { error: segmentsError } = await supabase.from('route_segments').insert(segmentRows)

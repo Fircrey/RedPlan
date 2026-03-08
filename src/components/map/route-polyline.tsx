@@ -3,7 +3,7 @@
 import { useMap, useMapsLibrary } from '@vis.gl/react-google-maps'
 import { useEffect, useRef, useState } from 'react'
 import type { LatLng, Pole, RouteSegment } from '@/types'
-import { DEFAULT_MAP_ZOOM, LINE_COLOR, LINE_SYMBOLOGY_CONFIG } from '@/lib/constants'
+import { DEFAULT_MAP_ZOOM, LINE_COLOR, LINE_SYMBOLOGY_CONFIG, LINE_SYMBOLOGY_COLORS } from '@/lib/constants'
 import { interpolate } from '@/lib/geo/interpolate'
 
 /** Zoom threshold: at or above this level we show the full gap + X icons */
@@ -71,6 +71,7 @@ export function RoutePolyline({ points, poles, segments }: RoutePolylineProps) {
 
       if (seg) {
         const config = LINE_SYMBOLOGY_CONFIG[seg.symbology]
+        const segColor = seg.color || LINE_SYMBOLOGY_COLORS[seg.symbology] || LINE_COLOR
 
         if (detailed) {
           // ── HIGH ZOOM: gap + X icons ──
@@ -84,7 +85,7 @@ export function RoutePolyline({ points, poles, segments }: RoutePolylineProps) {
           const line1 = new mapsLib.Polyline({
             path: [fromPt, gapStartPt],
             geodesic: true,
-            strokeColor: LINE_COLOR,
+            strokeColor: segColor,
             strokeOpacity: 0.8,
             strokeWeight: 4,
             map,
@@ -95,7 +96,7 @@ export function RoutePolyline({ points, poles, segments }: RoutePolylineProps) {
           const line2 = new mapsLib.Polyline({
             path: [gapEndPt, toPt],
             geodesic: true,
-            strokeColor: LINE_COLOR,
+            strokeColor: segColor,
             strokeOpacity: 0.8,
             strokeWeight: 4,
             map,
@@ -108,7 +109,7 @@ export function RoutePolyline({ points, poles, segments }: RoutePolylineProps) {
               icon: {
                 path: 'M -1,-1 L 1,1 M 1,-1 L -1,1',
                 scale: 4,
-                strokeColor: LINE_COLOR,
+                strokeColor: segColor,
                 strokeWeight: 2.5,
                 strokeOpacity: 1,
               },
@@ -120,7 +121,7 @@ export function RoutePolyline({ points, poles, segments }: RoutePolylineProps) {
           const line3 = new mapsLib.Polyline({
             path: [fromPt, toPt],
             geodesic: true,
-            strokeColor: LINE_COLOR,
+            strokeColor: segColor,
             strokeOpacity: 0,
             strokeWeight: 4,
             icons,
@@ -133,7 +134,7 @@ export function RoutePolyline({ points, poles, segments }: RoutePolylineProps) {
             icon: {
               path: 'M 0,-1 L 0,1',
               scale: 3,
-              strokeColor: LINE_COLOR,
+              strokeColor: segColor,
               strokeWeight: 2,
               strokeOpacity: 1,
             },
@@ -144,7 +145,7 @@ export function RoutePolyline({ points, poles, segments }: RoutePolylineProps) {
           const polyline = new mapsLib.Polyline({
             path: [fromPt, toPt],
             geodesic: true,
-            strokeColor: LINE_COLOR,
+            strokeColor: segColor,
             strokeOpacity: 0.8,
             strokeWeight: 4,
             icons: [dashIcon],

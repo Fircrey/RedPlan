@@ -1,6 +1,6 @@
 'use client'
 
-import { POLE_STATUS_COLORS, POLE_STATUS_LABELS, LINE_SYMBOLOGY_CONFIG } from '@/lib/constants'
+import { POLE_STATUS_COLORS, POLE_STATUS_LABELS, LINE_SYMBOLOGY_CONFIG, LINE_SYMBOLOGY_COLORS } from '@/lib/constants'
 import type { PoleStatus, LineSymbology } from '@/types'
 
 const statuses: PoleStatus[] = ['nuevo', 'existente', 'en_retiro', 'cambiar']
@@ -27,6 +27,10 @@ export function MapLegend() {
       <div className="space-y-1">
         {symbologies.map((s) => (
           <div key={s} className="flex items-center gap-2">
+            <span
+              className="w-4 h-1 rounded-sm flex-shrink-0"
+              style={{ backgroundColor: LINE_SYMBOLOGY_COLORS[s] }}
+            />
             <span className="font-mono text-[var(--color-text)] w-10 text-center">
               {LINE_SYMBOLOGY_CONFIG[s].label}
             </span>

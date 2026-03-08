@@ -50,10 +50,11 @@ export function useProjectRoute(projectId: string) {
 
       // Map segments (ensure numeric types — DB may return strings)
       const segments: RouteSegment[] = (route.segments || []).map(
-        (s: { from_pole: number | string; to_pole: number | string; symbology: string }) => ({
+        (s: { from_pole: number | string; to_pole: number | string; symbology: string; color?: string | null }) => ({
           fromPole: Number(s.from_pole),
           toPole: Number(s.to_pole),
           symbology: s.symbology as LineSymbology,
+          color: s.color || undefined,
         }),
       )
 
