@@ -17,6 +17,7 @@ import { useAutoSaveRoute } from '@/hooks/use-auto-save-route'
 import { useToast } from '@/components/ui/toast'
 import { Spinner } from '@/components/ui/spinner'
 import { MobileDrawer } from '@/components/mobile-drawer'
+import { haversineDistance } from '@/lib/geo/haversine'
 import type { CalculateRequest, PoleStatus, RouteSegment, ProjectStatus, Project } from '@/types'
 
 interface WorkspaceClientProps {
@@ -87,6 +88,24 @@ export function WorkspaceClient({ project }: WorkspaceClientProps) {
       )
     },
     [setPoles],
+  )
+
+  const handlePoleDrag = useCallback(
+    (index: number, lat: number, lng: number) => {
+      setPoles((prev) => {
+        const updated = prev.map((p, i) =>
+          i === index ? { ...p, lat, lng } : p,
+        )
+        // Recalculate total distance
+        let total = 0
+        for (let i = 0; i < updated.length - 1; i++) {
+          total += haversineDistance(updated[i], updated[i + 1])
+        }
+        setTotalDistanceMeters(total)
+        return updated
+      })
+    },
+    [setPoles, setTotalDistanceMeters],
   )
 
   const handleAddSegment = useCallback((segment: RouteSegment) => {
@@ -207,6 +226,7 @@ export function WorkspaceClient({ project }: WorkspaceClientProps) {
                 onSelectPole={setSelectedPoleIndex}
                 onPoleStatusChange={handlePoleStatusChange}
                 segments={segments}
+                onPoleDrag={handlePoleDrag}
               />
             </MapProvider>
           </ErrorBoundary>

@@ -20,6 +20,7 @@ interface MapViewProps {
   onSelectPole: (index: number | null) => void
   onPoleStatusChange: (index: number, newStatus: PoleStatus) => void
   segments: RouteSegment[]
+  onPoleDrag?: (index: number, lat: number, lng: number) => void
 }
 
 export const MapView = memo(function MapView({
@@ -29,6 +30,7 @@ export const MapView = memo(function MapView({
   onSelectPole,
   onPoleStatusChange,
   segments,
+  onPoleDrag,
 }: MapViewProps) {
   const [infoWindowPole, setInfoWindowPole] = useState<{ pole: Pole; index: number } | null>(null)
   const useClustering = poles.length > CLUSTERING_THRESHOLD
@@ -36,6 +38,16 @@ export const MapView = memo(function MapView({
   function handlePoleClick(pole: Pole, index: number) {
     onSelectPole(index)
     setInfoWindowPole({ pole, index })
+  }
+
+  function handlePoleDrag(index: number, lat: number, lng: number) {
+    onPoleDrag?.(index, lat, lng)
+    if (infoWindowPole && infoWindowPole.index === index) {
+      setInfoWindowPole({
+        ...infoWindowPole,
+        pole: { ...infoWindowPole.pole, lat, lng },
+      })
+    }
   }
 
   return (
@@ -56,12 +68,14 @@ export const MapView = memo(function MapView({
               pole={pole}
               isSelected={selectedPoleIndex === index}
               onClick={() => handlePoleClick(pole, index)}
+              onDragEnd={(lat, lng) => handlePoleDrag(index, lat, lng)}
             />
           ))}
         {useClustering && (
           <ClusteredMarkers
             poles={poles}
             onPoleClick={handlePoleClick}
+            onPoleDrag={handlePoleDrag}
           />
         )}
         {infoWindowPole && (
@@ -95,9 +109,11 @@ export const MapView = memo(function MapView({
 function ClusteredMarkers({
   poles,
   onPoleClick,
+  onPoleDrag,
 }: {
   poles: Pole[]
   onPoleClick: (pole: Pole, index: number) => void
+  onPoleDrag?: (index: number, lat: number, lng: number) => void
 }) {
   const map = useMap()
   const clustererRef = useRef<MarkerClusterer | null>(null)
@@ -114,8 +130,17 @@ function ClusteredMarkers({
       const marker = new google.maps.marker.AdvancedMarkerElement({
         position: { lat: pole.lat, lng: pole.lng },
         title: `Poste #${pole.sequenceNumber} (${pole.type})`,
+        gmpDraggable: true,
       })
       marker.addListener('click', () => onPoleClick(pole, index))
+      marker.addListener('dragend', () => {
+        const pos = marker.position
+        if (pos && onPoleDrag) {
+          const lat = typeof pos.lat === 'function' ? (pos as google.maps.LatLng).lat() : (pos as google.maps.LatLngLiteral).lat
+          const lng = typeof pos.lng === 'function' ? (pos as google.maps.LatLng).lng() : (pos as google.maps.LatLngLiteral).lng
+          onPoleDrag(index, lat, lng)
+        }
+      })
       return marker
     })
     markersRef.current = markers

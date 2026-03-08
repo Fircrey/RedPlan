@@ -14,6 +14,7 @@ interface WorkspaceContextValue {
   segments: RouteSegment[]
   onAddSegment: (segment: RouteSegment) => void
   onRemoveSegment: (index: number) => void
+  onPoleDrag?: (index: number, lat: number, lng: number) => void
   // Workflow
   projectStatus: ProjectStatus
   userRole: UserRole

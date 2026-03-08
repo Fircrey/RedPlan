@@ -9,9 +9,10 @@ interface PoleMarkerProps {
   pole: Pole
   isSelected: boolean
   onClick: () => void
+  onDragEnd?: (lat: number, lng: number) => void
 }
 
-export const PoleMarker = memo(function PoleMarker({ pole, isSelected, onClick }: PoleMarkerProps) {
+export const PoleMarker = memo(function PoleMarker({ pole, isSelected, onClick, onDragEnd }: PoleMarkerProps) {
   const color = POLE_STATUS_COLORS[pole.status]
   const size = isSelected ? 24 : 18
 
@@ -19,6 +20,12 @@ export const PoleMarker = memo(function PoleMarker({ pole, isSelected, onClick }
     <AdvancedMarker
       position={{ lat: pole.lat, lng: pole.lng }}
       onClick={onClick}
+      draggable={true}
+      onDragEnd={(e: google.maps.MapMouseEvent) => {
+        if (e.latLng && onDragEnd) {
+          onDragEnd(e.latLng.lat(), e.latLng.lng())
+        }
+      }}
       title={`Poste #${pole.sequenceNumber} (${pole.type})`}
     >
       <div
@@ -26,7 +33,7 @@ export const PoleMarker = memo(function PoleMarker({ pole, isSelected, onClick }
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          cursor: 'pointer',
+          cursor: 'grab',
         }}
       >
         <div
