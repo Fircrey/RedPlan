@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useSupabase } from '@/components/providers/supabase-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 
 export function LoginForm() {
   const supabase = useSupabase()
@@ -50,9 +51,8 @@ export function LoginForm() {
         <label htmlFor="password" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
           Contrasena
         </label>
-        <Input
+        <PasswordInput
           id="password"
-          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"

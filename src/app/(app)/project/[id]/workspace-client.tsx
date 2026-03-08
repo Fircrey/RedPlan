@@ -110,10 +110,37 @@ export function WorkspaceClient({ project }: WorkspaceClientProps) {
 
   const handleAddSegment = useCallback((segment: RouteSegment) => {
     setSegments((prev) => {
-      const filtered = prev.filter(
-        (s) => s.toPole <= segment.fromPole || s.fromPole >= segment.toPole,
-      )
-      return [...filtered, segment].sort((a, b) => a.fromPole - b.fromPole)
+      const result: RouteSegment[] = []
+      for (const s of prev) {
+        // No overlap — keep as-is
+        if (s.toPole <= segment.fromPole || s.fromPole >= segment.toPole) {
+          result.push(s)
+          continue
+        }
+        // Existing segment completely inside new one — drop it
+        if (s.fromPole >= segment.fromPole && s.toPole <= segment.toPole) {
+          continue
+        }
+        // Existing segment contains the new one — split into two
+        if (s.fromPole < segment.fromPole && s.toPole > segment.toPole) {
+          result.push({ ...s, toPole: segment.fromPole })
+          result.push({ ...s, fromPole: segment.toPole })
+          continue
+        }
+        // Partial overlap on the left — trim right side
+        if (s.fromPole < segment.fromPole) {
+          result.push({ ...s, toPole: segment.fromPole })
+          continue
+        }
+        // Partial overlap on the right — trim left side
+        if (s.toPole > segment.toPole) {
+          result.push({ ...s, fromPole: segment.toPole })
+          continue
+        }
+      }
+      return [...result, segment]
+        .filter((s) => s.fromPole < s.toPole)
+        .sort((a, b) => a.fromPole - b.fromPole)
     })
   }, [])
 
